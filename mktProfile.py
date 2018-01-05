@@ -65,12 +65,14 @@ class MarketProfile:
 
         length = len(my_list)
         i = 0
+
+        my_list.sort(key=lambda x: x[0])
         while i < length - 1:
             if abs(my_list[i][0] - my_list[i + 1][0]) / my_list[i][0] * 100 < difference_threshold:
-                del (my_list[i])
+                del my_list[i + 1]
                 length = length - 1
-            i = i + 1
-        my_list.sort(key=lambda x: x[0])
+            else:
+                i = i + 1
 
         for i in range(65, 92):
             f_idx = 0
