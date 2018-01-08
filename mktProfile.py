@@ -11,6 +11,9 @@ class MarketProfile:
         '''
         self.ohlcv_list = ohlcv_list
         self.duration = duration
+        self.df = None
+        self.low = 0
+        self.high = 0
 
     def prepare_ohlcv(self):
         '''
@@ -31,7 +34,7 @@ class MarketProfile:
         Creates the market profile
         :return: market profile in the form of a pandas Dataframe
         '''
-        high, low = 0.0, sys.float_info.max
+        self.high, self.low = 0.0, sys.float_info.max
         my_list = []
         offset = math.ceil(len(self.ohlcv_list) / 26)
 
@@ -43,10 +46,10 @@ class MarketProfile:
 
         for i in range(0, len(self.ohlcv_list)):
             f = [0] * 4
-            if self.ohlcv_list[i][2] > high:
-                high = self.ohlcv_list[i][2]
-            if self.ohlcv_list[i][3] < low:
-                low = self.ohlcv_list[i][3]
+            if self.ohlcv_list[i][2] > self.high:
+                self.high = self.ohlcv_list[i][2]
+            if self.ohlcv_list[i][3] < self.low:
+                self.low = self.ohlcv_list[i][3]
             if self.ohlcv_list[i][0] - cur_timestamp >= period:
                 cur_timestamp = self.ohlcv_list[i][0]
                 mychar += 1
@@ -99,5 +102,41 @@ class MarketProfile:
                             if append == 1:
                                 my_list[j].append(chr(i))
 
-        df = pd.DataFrame(my_list)
-        return df
+        self.df = pd.DataFrame(my_list)
+        return self.df
+
+    def poc(self):
+        columns = self.df.columns.values
+        # new_df = self.df[self.df[columns[-1]].notnull()]
+        rows = self.df.index[self.df[columns[-1]].notnull()].tolist()
+
+        avg = [0] * 10  # stores the avg of all possible combinations of poc
+        j = 0  # Index for avg
+        k = [0] * 10  # Counter for number of consecutive rows
+        avg_flag = 0  # flag to check where the last value came from
+        i = 0
+        while i < len(rows) - 1:
+            if rows[i] + 1 == rows[i + 1]:  # If consecutive rows
+                avg[j] += self.df.iloc[rows[i]][0]
+                k[j] += 1
+                avg_flag = 0
+            else:  # If not
+                avg[j] += self.df.iloc[rows[i]][0]
+                k[j] += 1
+                avg[j] /= k[j]
+                j += 1
+                avg_flag = 1
+            i += 1
+
+        if avg_flag == 1:
+            j += 1
+        avg[j] += self.df.iloc[rows[i]][0]
+        k[j] += 1
+        avg[j] /= k[j]
+
+        poc = avg[k.index(max(k))]
+
+        return poc
+
+    def range(self):
+        return self.low, self.high

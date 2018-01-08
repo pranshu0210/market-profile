@@ -27,3 +27,6 @@ df = mktPfl.create_profile()
 
 print(df)
 df.to_csv("BTCUSDT.csv")
+
+poc = mktPfl.poc()
+low, high = mktPfl.range()
