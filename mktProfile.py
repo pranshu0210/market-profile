@@ -106,6 +106,10 @@ class MarketProfile:
         return self.df
 
     def poc(self):
+        '''
+        Calculates the poc and returns it
+        :return: poc
+        '''
         columns = self.df.columns.values
         # new_df = self.df[self.df[columns[-1]].notnull()]
         rows = self.df.index[self.df[columns[-1]].notnull()].tolist()
@@ -139,4 +143,8 @@ class MarketProfile:
         return poc
 
     def range(self):
+        '''
+        Calculates the range and returns
+        :return: rangeLow, rangeHigh
+        '''
         return self.low, self.high
