@@ -15,19 +15,22 @@ class MarketProfile:
         self.low = 0
         self.high = 0
 
+    def prepare(self, ohlcv: list, duration: int):
+        ohlcv.reverse()
+        limit = ohlcv[0][0] - duration
+
+        for ohlc in ohlcv:
+            if ohlc[0] > limit:
+                yield ohlc
+            else:
+                return  # Divide interval into 26 parts
+
     def prepare_ohlcv(self):
         '''
         Prepares ohlcv into the desired list
         :return: 
         '''
-        cur_timestamp = self.ohlcv_list[-1][0]
-        ohlcv_selected = []
-        for i in range(len(self.ohlcv_list) - 1, 0, -1):
-            if cur_timestamp - self.ohlcv_list[i][0] >= self.duration:
-                break
-            else:
-                ohlcv_selected.append(self.ohlcv_list[i])
-        self.ohlcv_list = ohlcv_selected
+        self.ohlcv_list = list(self.prepare(self.ohlcv_list, self.duration))
 
     def create_profile(self):
         '''
@@ -55,27 +58,25 @@ class MarketProfile:
                 mychar += 1
             for j in range(0, len(my_list)):
                 for q in range(0, 4):
-                    if abs(my_list[j][0] - self.ohlcv_list[i][q]) / my_list[j][0] * 100 < difference_threshold:
+                    if abs(my_list[j][0] - self.ohlcv_list[i][q + 1]) / my_list[j][0] * 100 < difference_threshold:
                         f[q] = 1
-                        if f[q] != 2:
-                            if my_list[j].count(chr(mychar)) == 0:
-                                my_list[j].append(chr(mychar))
-                            f[q] = f[q] + 1
+                        if my_list[j].count(chr(mychar)) == 0:
+                            my_list[j].append(chr(mychar))
 
             for q in range(0, 4):
-                if f[q] <= 0:
-                    my_list.append([self.ohlcv_list[i][1], chr(mychar)])
+                if f[q] == 0:
+                    similar_flag = 0
+                    for m in range(1, q + 1):
+                        if abs(self.ohlcv_list[i][q + 1] - self.ohlcv_list[i][m]) / self.ohlcv_list[i][
+                                    q + 1] * 100 < difference_threshold:
+                            similar_flag = 1
+                    if similar_flag == 0:
+                        my_list.append([self.ohlcv_list[i][q + 1], chr(mychar)])
 
         length = len(my_list)
         i = 0
 
         my_list.sort(key=lambda x: x[0])
-        while i < length - 1:
-            if abs(my_list[i][0] - my_list[i + 1][0]) / my_list[i][0] * 100 < difference_threshold:
-                del my_list[i + 1]
-                length = length - 1
-            else:
-                i = i + 1
 
         for i in range(65, 92):
             f_idx = 0
