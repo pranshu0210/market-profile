@@ -14,6 +14,9 @@ class MarketProfile:
         self.df = None
         self.low = 0
         self.high = 0
+        self.cpt_market_profile = None
+        self.my_list = None
+        self.cmp_df = None
 
     def prepare(self, ohlcv: list, duration: int):
         ohlcv.reverse()
@@ -38,8 +41,7 @@ class MarketProfile:
         :return: market profile in the form of a pandas Dataframe
         """
         self.high, self.low = 0.0, sys.float_info.max
-        my_list = []
-        offset = math.ceil(len(self.ohlcv_list) / 26)
+        self.my_list = []
 
         cur_timestamp = self.ohlcv_list[-1][0]
         self.ohlcv_list.reverse()
@@ -55,17 +57,18 @@ class MarketProfile:
                 self.low = self.ohlcv_list[i][3]
             if self.ohlcv_list[i][0] - cur_timestamp >= period:
                 cur_timestamp = self.ohlcv_list[i][0]
-                for j in range(0, len(my_list)):
-                    if my_list[j][-1] != chr(mychar):  # If price does not exist for this interval
+                for j in range(0, len(self.my_list)):
+                    if self.my_list[j][-1] != chr(mychar):  # If price does not exist for this interval
                         # Append 0 to the list
-                        my_list[j].append(0)
+                        self.my_list[j].append(0)
                 mychar += 1
-            for j in range(0, len(my_list)):
+            for j in range(0, len(self.my_list)):
                 for q in range(0, 4):
-                    if abs(my_list[j][0] - self.ohlcv_list[i][q + 1]) / my_list[j][0] * 100 < difference_threshold:
+                    if abs(self.my_list[j][0] - self.ohlcv_list[i][q + 1]) \
+                            / self.my_list[j][0] * 100 < difference_threshold:
                         f[q] = 1
-                        if my_list[j].count(chr(mychar)) == 0:
-                            my_list[j].append(chr(mychar))
+                        if self.my_list[j].count(chr(mychar)) == 0:
+                            self.my_list[j].append(chr(mychar))
 
             for q in range(0, 4):
                 if f[q] == 0:
@@ -75,45 +78,63 @@ class MarketProfile:
                                     q + 1] * 100 < difference_threshold:
                             similar_flag = 1
                     if similar_flag == 0:
-                        my_list.append([self.ohlcv_list[i][q + 1]])
+                        self.my_list.append([self.ohlcv_list[i][q + 1]])
                         for char_ter in range(65, mychar):
-                            my_list[-1].append(0)
-                        my_list[-1].append(chr(mychar))
+                            self.my_list[-1].append(0)
+                        self.my_list[-1].append(chr(mychar))
 
-        for j in range(0, len(my_list)):
-            if my_list[j][-1] != chr(mychar):  # If price does not exist for this interval
+        for j in range(0, len(self.my_list)):
+            if self.my_list[j][-1] != chr(mychar):  # If price does not exist for this interval
                 # Append 0 to the list
-                my_list[j].append(0)
-        my_list.sort(key=lambda x: x[0])
+                self.my_list[j].append(0)
+
+        # Sort the list based on price
+        self.my_list.sort(key=lambda x: x[0])
 
         mychar = 65
-        for j in range(1, len(my_list[0])):
+        # Fill in empty cell belonging to the same interval
+        for j in range(1, len(self.my_list[0])):
             first_idx = 0
             last_idx = 0
 
-            for i in range(0, len(my_list)):
-                if my_list[i][j] == chr(mychar):
+            for i in range(0, len(self.my_list)):
+                if self.my_list[i][j] == chr(mychar):
                     if first_idx == 0:
                         first_idx = i
                     last_idx = i
 
             for i in range(first_idx, last_idx):
-                if my_list[i][j] != chr(mychar):
-                    my_list[i][j] = chr(mychar)
+                if self.my_list[i][j] != chr(mychar):
+                    self.my_list[i][j] = chr(mychar)
 
             mychar += 1
 
-        self.df = pd.DataFrame(my_list)
+        self.df = pd.DataFrame(self.my_list)
         return self.df
+
+    def compact_profile(self):
+        """
+        Compacts the standard market profile
+        :return: 
+        """
+        if self.df is None:  # Create profile if not already created
+            self.create_profile()
+        cmp_list = []
+        for row in self.my_list:
+            cmp_list.append(list(filter(lambda a: a != 0, row)))
+        self.cmp_df = pd.DataFrame(cmp_list)
+        return self.cmp_df
 
     def poc(self):
         """
         Calculates the poc and returns it
         :return: poc
         """
-        columns = self.df.columns.values
+        if self.cmp_df is None:
+            self.compact_profile()
+        columns = self.cmp_df.columns.values
         # new_df = self.df[self.df[columns[-1]].notnull()]
-        rows = self.df.index[self.df[columns[-1]].notnull()].tolist()
+        rows = self.cmp_df.index[self.df[columns[-1]].notnull()].tolist()
 
         avg = [0] * 10  # stores the avg of all possible combinations of poc
         j = 0  # Index for avg
@@ -122,11 +143,11 @@ class MarketProfile:
         i = 0
         while i < len(rows) - 1:
             if rows[i] + 1 == rows[i + 1]:  # If consecutive rows
-                avg[j] += self.df.iloc[rows[i]][0]
+                avg[j] += self.cmp_df.iloc[rows[i]][0]
                 k[j] += 1
                 avg_flag = 0
             else:  # If not
-                avg[j] += self.df.iloc[rows[i]][0]
+                avg[j] += self.cmp_df.iloc[rows[i]][0]
                 k[j] += 1
                 avg[j] /= k[j]
                 j += 1
@@ -135,7 +156,7 @@ class MarketProfile:
 
         if avg_flag == 1:
             j += 1
-        avg[j] += self.df.iloc[rows[i]][0]
+        avg[j] += self.cmp_df.iloc[rows[i]][0]
         k[j] += 1
         avg[j] /= k[j]
 
@@ -148,4 +169,6 @@ class MarketProfile:
         Calculates the range and returns
         :return: rangeLow, rangeHigh
         """
+        if self.df is None:
+            self.create_profile()
         return self.low, self.high
