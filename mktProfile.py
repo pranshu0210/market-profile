@@ -23,19 +23,35 @@ class MarketProfile:
 
     @classmethod
     def init_market_profile_df(cls, ohlcv_df, duration):
+        """
+        Class method for when ohlcv is a Dataframe
+        :param ohlcv_df: 
+        :param duration: 
+        :return: Market_Profile object
+        """
         return cls(ohlcv_df=ohlcv_df, duration=duration)
 
     @classmethod
     def init_market_profile_list(cls, ohlcv_list, duration):
+        """
+        Class method for when ohlcv is a list
+        :param ohlcv_list: 
+        :param duration: 
+        :return: Market_Profile object
+        """
         return cls(ohlcv_list=ohlcv_list, duration=duration)
 
     def convert_to_list(self):
+        """
+        Convert input ohlc Dataframe to List
+        :return: 
+        """
         if self.ohlcv_df is None:
             pass
         else:
             cols = ['t', 'o', 'h', 'l', 'c']
             self.ohlcv_df = self.ohlcv_df[cols]  # reorder columns in the desired way
-            self.ohlcv_list = self.ohlcv_df.values.tolist()
+            self.ohlcv_list = self.ohlcv_df.values.tolist()  # convert df to list
 
     def prepare(self, ohlcv: list, duration: int):
         ohlcv.reverse()
