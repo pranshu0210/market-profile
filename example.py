@@ -19,7 +19,7 @@ ohlcv = bittrex.fetch_ohlcv(symbol, "1m")
 period = 6 * 60 * 60 * 1000
 
 # Create an object of MarketProfile
-mktPfl = MarketProfile(ohlcv_list=ohlcv, duration=period)
+mktPfl = MarketProfile.init_market_profile_list(ohlcv_list=ohlcv, duration=period)
 mktPfl.prepare_ohlcv()
 
 # Build the profile
