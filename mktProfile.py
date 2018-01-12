@@ -5,18 +5,37 @@ import pandas as pd
 
 
 class MarketProfile:
-    def __init__(self, ohlcv_list, duration):
+    def __init__(self, ohlcv_list=None, ohlcv_df=None, duration=None):
         """
         Initialise a MarketProfile Object with a ohlcv list
         """
         self.ohlcv_list = ohlcv_list
         self.duration = duration
+        self.ohlcv_df = ohlcv_df
         self.df = None
         self.low = 0
         self.high = 0
         self.cpt_market_profile = None
         self.my_list = None
         self.cmp_df = None
+
+        self.convert_to_list()
+
+    @classmethod
+    def init_market_profile_df(cls, ohlcv_df, duration):
+        return cls(ohlcv_df=ohlcv_df, duration=duration)
+
+    @classmethod
+    def init_market_profile_list(cls, ohlcv_list, duration):
+        return cls(ohlcv_list=ohlcv_list, duration=duration)
+
+    def convert_to_list(self):
+        if self.ohlcv_df is None:
+            pass
+        else:
+            cols = ['t', 'o', 'h', 'l', 'c']
+            self.ohlcv_df = self.ohlcv_df[cols]  # reorder columns in the desired way
+            self.ohlcv_list = self.ohlcv_df.values.tolist()
 
     def prepare(self, ohlcv: list, duration: int):
         ohlcv.reverse()
