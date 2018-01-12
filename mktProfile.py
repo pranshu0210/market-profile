@@ -6,9 +6,9 @@ import pandas as pd
 
 class MarketProfile:
     def __init__(self, ohlcv_list, duration):
-        '''
+        """
         Initialise a MarketProfile Object with a ohlcv list
-        '''
+        """
         self.ohlcv_list = ohlcv_list
         self.duration = duration
         self.df = None
@@ -26,17 +26,17 @@ class MarketProfile:
                 return  # Divide interval into 26 parts
 
     def prepare_ohlcv(self):
-        '''
+        """
         Prepares ohlcv into the desired list
         :return: 
-        '''
+        """
         self.ohlcv_list = list(self.prepare(self.ohlcv_list, self.duration))
 
     def create_profile(self):
-        '''
+        """
         Creates the market profile
         :return: market profile in the form of a pandas Dataframe
-        '''
+        """
         self.high, self.low = 0.0, sys.float_info.max
         my_list = []
         offset = math.ceil(len(self.ohlcv_list) / 26)
@@ -55,6 +55,10 @@ class MarketProfile:
                 self.low = self.ohlcv_list[i][3]
             if self.ohlcv_list[i][0] - cur_timestamp >= period:
                 cur_timestamp = self.ohlcv_list[i][0]
+                for j in range(0, len(my_list)):
+                    if my_list[j][-1] != chr(mychar):  # If price does not exist for this interval
+                        # Append 0 to the list
+                        my_list[j].append(0)
                 mychar += 1
             for j in range(0, len(my_list)):
                 for q in range(0, 4):
@@ -71,46 +75,42 @@ class MarketProfile:
                                     q + 1] * 100 < difference_threshold:
                             similar_flag = 1
                     if similar_flag == 0:
-                        my_list.append([self.ohlcv_list[i][q + 1], chr(mychar)])
+                        my_list.append([self.ohlcv_list[i][q + 1]])
+                        for char_ter in range(65, mychar):
+                            my_list[-1].append(0)
+                        my_list[-1].append(chr(mychar))
 
-        length = len(my_list)
-        i = 0
-
+        for j in range(0, len(my_list)):
+            if my_list[j][-1] != chr(mychar):  # If price does not exist for this interval
+                # Append 0 to the list
+                my_list[j].append(0)
         my_list.sort(key=lambda x: x[0])
 
-        for i in range(65, 92):
-            f_idx = 0
-            l_idx = 0
-            append = 0
-            for z in range(0, 2):
-                if z == 0:
-                    for j in range(0, len(my_list)):
-                        for k in range(1, len(my_list[j])):
-                            if my_list[j][k] == chr(i):
-                                if f_idx == 0:
-                                    f_idx = j
-                                l_idx = j
-                                break
-                elif z == 1:
-                    for j in range(f_idx + 1, l_idx):
-                        if my_list[j].count(chr(i)) == 0:
-                            for k in range(1, len(my_list[j])):
-                                if my_list[j][k] > chr(i):
-                                    my_list[j].insert(k, chr(i))
-                                    append = 0
-                                    break
-                                append = 1
-                            if append == 1:
-                                my_list[j].append(chr(i))
+        mychar = 65
+        for j in range(1, len(my_list[0])):
+            first_idx = 0
+            last_idx = 0
+
+            for i in range(0, len(my_list)):
+                if my_list[i][j] == chr(mychar):
+                    if first_idx == 0:
+                        first_idx = i
+                    last_idx = i
+
+            for i in range(first_idx, last_idx):
+                if my_list[i][j] != chr(mychar):
+                    my_list[i][j] = chr(mychar)
+
+            mychar += 1
 
         self.df = pd.DataFrame(my_list)
         return self.df
 
     def poc(self):
-        '''
+        """
         Calculates the poc and returns it
         :return: poc
-        '''
+        """
         columns = self.df.columns.values
         # new_df = self.df[self.df[columns[-1]].notnull()]
         rows = self.df.index[self.df[columns[-1]].notnull()].tolist()
@@ -144,8 +144,8 @@ class MarketProfile:
         return poc
 
     def range(self):
-        '''
+        """
         Calculates the range and returns
         :return: rangeLow, rangeHigh
-        '''
+        """
         return self.low, self.high
