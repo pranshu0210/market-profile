@@ -8,16 +8,13 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Generate Market Profile. Output is a csv named profile.csv")
     parser.add_argument('csv', help='location of csv')
     parser.add_argument('duration', help='duration in milliseconds')
-    parser.add_argument('--compact', help='Whether to save compact or standard profile(t or f)', choices=['t, f'])
+    parser.add_argument('--compact', help='Whether to save compact or standard profile(t or f)', choices=['t', 'f'])
 
     args = parser.parse_args()
 
     location = args.csv
     duration = int(args.duration)
     compact = args.compact
-
-    print(location)
-    print(duration)
 
     ohlcv = pd.read_csv(location, usecols=['t', 'o', 'h', 'l', 'c'])
 
@@ -33,3 +30,5 @@ if __name__ == "__main__":
 
     # Write to csv
     df.to_csv('profile.csv')
+
+    print('You profile is saved as profile.csv')
