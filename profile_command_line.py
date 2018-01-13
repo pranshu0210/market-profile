@@ -9,12 +9,14 @@ if __name__ == "__main__":
     parser.add_argument('csv', help='location of csv')
     parser.add_argument('duration', help='duration in milliseconds')
     parser.add_argument('--compact', help='Whether to save compact or standard profile(t or f)', choices=['t', 'f'])
+    parser.add_argument('--dest', help='Destination to save profile to')
 
     args = parser.parse_args()
 
     location = args.csv
     duration = int(args.duration)
     compact = args.compact
+    dest = args.dest
 
     ohlcv = pd.read_csv(location, usecols=['t', 'o', 'h', 'l', 'c'])
 
@@ -29,6 +31,8 @@ if __name__ == "__main__":
         df = mktProfileObj.compact_profile()
 
     # Write to csv
-    df.to_csv('profile.csv')
+    if dest is None:
+        dest = 'profile.csv'
+    df.to_csv(dest)
 
-    print('You profile is saved as profile.csv')
+    print('You profile is saved as', dest)
