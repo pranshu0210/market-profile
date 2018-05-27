@@ -3,7 +3,7 @@ import ccxt
 from mktProfile import MarketProfile
 
 """
-An example on how to use this script.
+An examples on how to use this script.
 Here, we are retrieving 1 minute ohlcv data from Bittrex. 
 """
 

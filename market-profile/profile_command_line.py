@@ -1,7 +1,9 @@
 import argparse
+import sys
 
 import pandas as pd
 
+sys.path.append('./market-profile/')
 from mktProfile import MarketProfile
 
 if __name__ == "__main__":
