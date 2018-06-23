@@ -20,5 +20,5 @@ Example:  <br/>
 python profile_command_line.py [location of csv] [duration(ms)] --compact [t,f] --dest [destination to save file to(default is current working directory)] 
 ```
 # TODO
-1. ~~Add this repository to PyPi. ~~
+1. ~~Add this repository to PyPi.~~
 2. Add a feature to visualise market-profile
