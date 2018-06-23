@@ -34,5 +34,6 @@ poc = mktPfl.poc()
 # Get the range of prices
 low, high = mktPfl.range()
 
+mktPfl.reduce_profile(64).to_csv('hello.csv')
 # Write to csv
 cmp_df.to_csv("BTCUSDT.csv")

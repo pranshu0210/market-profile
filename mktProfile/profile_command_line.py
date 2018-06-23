@@ -3,7 +3,7 @@ import sys
 
 import pandas as pd
 
-sys.path.append('./market-profile/')
+sys.path.append('./mktProfile/')
 from mktProfile import MarketProfile
 
 if __name__ == "__main__":
