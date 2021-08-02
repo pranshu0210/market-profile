@@ -244,7 +244,7 @@ class MarketProfile:
         self.u_step_df = self.df.iloc[price_idx, :]
 
         # Replace first column with price list
-        self.u_step_df[0] = price_list
+        self.u_step_df.loc[:,0] = price_list
 
         # Reorder the indices
         self.u_step_df.index = range(len(price_list))
