@@ -232,7 +232,7 @@ class MarketProfile:
         price_list = [i * step + price_range[0] for i in range(0, n_r + 1)]
 
         # Get the actual list of prices from dataframe
-        price_list_actual = self.df.ix[:, 0].tolist()
+        price_list_actual = self.df.loc[:, 0].tolist()
 
         # Find the indices closest rows
         price_idx = []
@@ -244,7 +244,7 @@ class MarketProfile:
         self.u_step_df = self.df.iloc[price_idx, :]
 
         # Replace first column with price list
-        self.u_step_df[0] = price_list
+        self.u_step_df.loc[:,0] = price_list
 
         # Reorder the indices
         self.u_step_df.index = range(len(price_list))
